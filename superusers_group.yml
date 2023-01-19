@@ -1,0 +1,24 @@
+- name: Create Superusers group and add user2 and user3 into it
+  hosts: test
+  vars:
+    users: [user2,user3]
+  tasks:
+  - name: Ensure group "superusers" exists
+    group:
+      name: superusers
+      state: present
+  - name: Add users to superusers group
+    user:
+      name: "{{ item }}"
+      groups: superusers
+      append: yes
+    loop: "{{ users }}"
+  - name: Validate the sudoers file before saving
+    lineinfile:
+      path: /etc/sudoers
+      state: present
+      regexp: '^%SUPERUSERS ALL='
+      line: '%SUPERUSERS ALL=(ALL:ALL) NOPASSWD: ALL'
+      validate: /usr/sbin/visudo -cf %s
+
+
